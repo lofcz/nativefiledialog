@@ -59,7 +59,7 @@ workspace "NativeFileDialog"
     optimize "On"
 
   project "nfd"
-    kind "StaticLib"
+    kind "SharedLib"
 
     -- common files
     files {root_dir.."src/*.h",

@@ -30,9 +30,9 @@ ifeq ($(config),release_x64)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += ../lib/Release/x64/libnfd.a -framework Foundation -framework AppKit
-  LDDEPS += ../lib/Release/x64/libnfd.a
-  ALL_LDFLAGS += $(LDFLAGS) -L../lib/Release/x64 -m64
+  LIBS += ../lib/Release/x64/libnfd.dylib -framework Foundation -framework AppKit
+  LDDEPS += ../lib/Release/x64/libnfd.dylib
+  ALL_LDFLAGS += $(LDFLAGS) -L../lib/Release/x64 -Wl,-rpath,'@loader_path/../lib/Release/x64' -m64
   LINKCMD = $(CC) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef

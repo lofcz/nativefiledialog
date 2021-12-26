@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		62D586CEA6E958009ABADD0E /* libnfd.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 164F31368771D2283D387F76 /* libnfd.a */; };
 		B762408A248A4EFC261D3ECA /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 893A8412D69D7A444CBC7A52 /* AppKit.framework */; };
 		BDAA66E6806AC758DD9FA526 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B74DEAE2FBBE6E0B3A914EE /* Foundation.framework */; };
+		CC2301B4CBC5E4E6061A97F4 /* libnfd.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 141512BC6B7A85AE1D88A0FC /* libnfd.dylib */; };
 		FD8CFC1C578E130E1ED50A5C /* test_opendialogmultiple.c in Sources */ = {isa = PBXBuildFile; fileRef = 045228841F1E973622EF2EC4 /* test_opendialogmultiple.c */; };
 /* End PBXBuildFile section */
 
@@ -18,21 +18,21 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 360631F05E40EAA245DC7830 /* nfd.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 4E280AA77CCE5E99D60FB8E7;
-			remoteInfo = libnfd.a;
+			remoteGlobalIDString = 3A448DFA3AF78AECAED95C3A;
+			remoteInfo = libnfd.dylib;
 		};
 		AA0A9D53A3709EC5970BFB93 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 360631F05E40EAA245DC7830 /* nfd.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = ED35A9AD9188475FA3C08FED;
-			remoteInfo = libnfd.a;
+			remoteGlobalIDString = D5558EA07843B552076994E0;
+			remoteInfo = libnfd.dylib;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		045228841F1E973622EF2EC4 /* test_opendialogmultiple.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = test_opendialogmultiple.c; path = ../../test/test_opendialogmultiple.c; sourceTree = "<group>"; };
-		360631F05E40EAA245DC7830 /* libnfd.a */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "nfd.xcodeproj"; path = nfd.xcodeproj; sourceTree = SOURCE_ROOT; };
+		360631F05E40EAA245DC7830 /* libnfd.dylib */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "nfd.xcodeproj"; path = nfd.xcodeproj; sourceTree = SOURCE_ROOT; };
 		4B74DEAE2FBBE6E0B3A914EE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		5EEA00562255C20860F96696 /* test_opendialogmultiple */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = test_opendialogmultiple; path = test_opendialogmultiple; sourceTree = BUILT_PRODUCTS_DIR; };
 		893A8412D69D7A444CBC7A52 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -45,11 +45,24 @@
 			files = (
 				BDAA66E6806AC758DD9FA526 /* Foundation.framework in Frameworks */,
 				B762408A248A4EFC261D3ECA /* AppKit.framework in Frameworks */,
-				62D586CEA6E958009ABADD0E /* libnfd.a in Frameworks */,
+				CC2301B4CBC5E4E6061A97F4 /* libnfd.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		E4F254B206BE01E443732AF2 /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXGroup section */
 		3323A4ED33D6A1DFA7B8732D /* test_opendialogmultiple */ = {
@@ -66,7 +79,7 @@
 		5D4848BA745AE3EC6476DEFA /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				164F31368771D2283D387F76 /* libnfd.a */,
+				141512BC6B7A85AE1D88A0FC /* libnfd.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -107,6 +120,7 @@
 				0ED4BB66370F74181EAB01A6 /* Resources */,
 				7881D4BDA0BC8D6F88581AFD /* Sources */,
 				9EED3AC6C727F378AEC38106 /* Frameworks */,
+				E4F254B206BE01E443732AF2 /* Embed Libraries */,
 			);
 			buildRules = (
 			);
@@ -148,10 +162,10 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		164F31368771D2283D387F76 /* libnfd.a */ = {
+		141512BC6B7A85AE1D88A0FC /* libnfd.dylib */ = {
 			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libnfd.a;
+			fileType = "compiled.mach-o.dylib";
+			path = libnfd.dylib;
 			remoteRef = 57D02ABA51362C2C44D188FA /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -181,7 +195,7 @@
 /* Begin PBXTargetDependency section */
 		4B0085C3621320F5522F1C03 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			name = libnfd.a;
+			name = libnfd.dylib;
 			targetProxy = AA0A9D53A3709EC5970BFB93 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -214,6 +228,9 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@loader_path/../lib/Release/x64",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					../lib/Release/x64,
 				);
