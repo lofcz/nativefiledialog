@@ -39,6 +39,24 @@ void NFD_PathSet_Free( nfdpathset_t *pathset )
     NFDi_Free( pathset->buf );
 }
 
+void NFD_Dummy()
+{
+    // function that does nothing, its purpose is
+    // for binding libraries to detect potential problems ahead of time
+}
+
+// make the allocation/deallocation public to prevent mismatching allocators
+// in case the host program uses a different implementation of malloc/free than the library does
+void *NFD_Malloc( size_t bytes )
+{
+    return NFDi_Malloc(bytes);
+}
+
+void NFD_Free( void* ptr )
+{
+    NFDi_Free(ptr);
+}
+
 /* internal routines */
 
 void *NFDi_Malloc( size_t bytes )
