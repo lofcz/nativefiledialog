@@ -16,6 +16,17 @@ extern "C" {
 
 #include <stddef.h>
 
+/* dll support */
+#ifdef _WIN32
+#  ifdef MODULE_API_EXPORTS
+#    define NATIVE_FILE_DIALOG_MODULE_API __declspec(dllexport)
+#  else
+#    define NATIVE_FILE_DIALOG_MODULE_API __declspec(dllimport)
+#  endif
+#else
+#  define NATIVE_FILE_DIALOG_MODULE_API
+#endif
+
 /* denotes UTF-8 char */
 typedef char nfdchar_t;
 
@@ -36,41 +47,45 @@ typedef enum {
 /* nfd_<targetplatform>.c */
 
 /* single file open dialog */    
-nfdresult_t NFD_OpenDialog( const nfdchar_t *filterList,
-                            const nfdchar_t *defaultPath,
-                            nfdchar_t **outPath );
+NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_OpenDialog(
+    const nfdchar_t *filterList,
+    const nfdchar_t *defaultPath,
+    nfdchar_t **outPath );
 
 /* multiple file open dialog */    
-nfdresult_t NFD_OpenDialogMultiple( const nfdchar_t *filterList,
-                                    const nfdchar_t *defaultPath,
-                                    nfdpathset_t *outPaths );
+NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_OpenDialogMultiple(
+    const nfdchar_t *filterList,
+    const nfdchar_t *defaultPath,
+    nfdpathset_t *outPaths );
 
 /* save dialog */
-nfdresult_t NFD_SaveDialog( const nfdchar_t *filterList,
-                            const nfdchar_t *defaultPath,
-                            nfdchar_t **outPath );
+NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_SaveDialog(
+    const nfdchar_t *filterList,
+    const nfdchar_t *defaultPath,
+    nfdchar_t **outPath );
 
 
 /* select folder dialog */
-nfdresult_t NFD_PickFolder( const nfdchar_t *defaultPath,
-                            nfdchar_t **outPath);
+NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_PickFolder(
+    const nfdchar_t *defaultPath,
+    nfdchar_t **outPath);
 
 /* nfd_common.c */
 
 /* get last error -- set when nfdresult_t returns NFD_ERROR */
-const char *NFD_GetError( void );
+NATIVE_FILE_DIALOG_MODULE_API const char *NFD_GetError( void );
 /* get the number of entries stored in pathSet */
-size_t      NFD_PathSet_GetCount( const nfdpathset_t *pathSet );
+NATIVE_FILE_DIALOG_MODULE_API size_t NFD_PathSet_GetCount( const nfdpathset_t *pathSet );
 /* Get the UTF-8 path at offset index */
-nfdchar_t  *NFD_PathSet_GetPath( const nfdpathset_t *pathSet, size_t index );
+NATIVE_FILE_DIALOG_MODULE_API nfdchar_t *NFD_PathSet_GetPath( const nfdpathset_t *pathSet, size_t index );
 /* Free the pathSet */    
-void        NFD_PathSet_Free( nfdpathset_t *pathSet );
+NATIVE_FILE_DIALOG_MODULE_API void NFD_PathSet_Free( nfdpathset_t *pathSet );
 
-void        NFD_Dummy();
+NATIVE_FILE_DIALOG_MODULE_API void NFD_Dummy();
 
-void       *NFD_Malloc( size_t bytes );
+NATIVE_FILE_DIALOG_MODULE_API void *NFD_Malloc( size_t bytes );
 
-void        NFD_Free( void* ptr );
+NATIVE_FILE_DIALOG_MODULE_API void NFD_Free( void* ptr );
 
 
 #ifdef __cplusplus
