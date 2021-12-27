@@ -8,15 +8,19 @@
 
 /* Begin PBXBuildFile section */
 		0815210E38F919004C114F4E /* nfd_cocoa.m in Sources */ = {isa = PBXBuildFile; fileRef = 906CCB56B692FB081D99F196 /* nfd_cocoa.m */; };
+		B762408A248A4EFC261D3ECA /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 893A8412D69D7A444CBC7A52 /* AppKit.framework */; };
+		BDAA66E6806AC758DD9FA526 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B74DEAE2FBBE6E0B3A914EE /* Foundation.framework */; };
 		F946FD22F308B9942D07BB62 /* nfd_common.c in Sources */ = {isa = PBXBuildFile; fileRef = 5A7B972AA2EC7B5CE78B4D6A /* nfd_common.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		3A448DFA3AF78AECAED95C3A /* libnfd.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; name = libnfd.dylib; path = libnfd.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		42F539D06B2FF28252CB8010 /* simple_exec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = simple_exec.h; path = ../../src/simple_exec.h; sourceTree = "<group>"; };
+		4B74DEAE2FBBE6E0B3A914EE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		5A7B972AA2EC7B5CE78B4D6A /* nfd_common.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = nfd_common.c; path = ../../src/nfd_common.c; sourceTree = "<group>"; };
 		5E955E0662063038E372D446 /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = common.h; path = ../../src/common.h; sourceTree = "<group>"; };
 		6832C6170B20ECC99A46CC57 /* nfd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = nfd.h; path = ../../src/include/nfd.h; sourceTree = "<group>"; };
+		893A8412D69D7A444CBC7A52 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		906CCB56B692FB081D99F196 /* nfd_cocoa.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = nfd_cocoa.m; path = ../../src/nfd_cocoa.m; sourceTree = "<group>"; };
 		F016F6343887DA667D26AC74 /* nfd_common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = nfd_common.h; path = ../../src/nfd_common.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -26,6 +30,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BDAA66E6806AC758DD9FA526 /* Foundation.framework in Frameworks */,
+				B762408A248A4EFC261D3ECA /* AppKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -54,6 +60,7 @@
 				5A7B972AA2EC7B5CE78B4D6A /* nfd_common.c */,
 				F016F6343887DA667D26AC74 /* nfd_common.h */,
 				42F539D06B2FF28252CB8010 /* simple_exec.h */,
+				BBF76781A7E87333FA200DC1 /* Frameworks */,
 				A6C936B49B3FADE6EA134CF4 /* Products */,
 			);
 			name = nfd;
@@ -73,6 +80,15 @@
 				3A448DFA3AF78AECAED95C3A /* libnfd.dylib */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		BBF76781A7E87333FA200DC1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4B74DEAE2FBBE6E0B3A914EE /* Foundation.framework */,
+				893A8412D69D7A444CBC7A52 /* AppKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

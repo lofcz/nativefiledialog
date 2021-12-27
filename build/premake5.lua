@@ -83,6 +83,7 @@ workspace "NativeFileDialog"
     filter "system:macosx"
       language "C"
       files {root_dir.."src/nfd_cocoa.m"}
+      links {"Foundation.framework", "AppKit.framework"}
 
 
 
