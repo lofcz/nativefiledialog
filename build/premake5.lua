@@ -79,7 +79,7 @@ workspace "NativeFileDialog"
   add_macos_arm_target_flags()
 
   project "nfd"
-    kind "StaticLib"
+    kind "SharedLib"
 
     -- common files
     files {root_dir.."src/*.h",
@@ -104,6 +104,7 @@ workspace "NativeFileDialog"
     filter "system:macosx"
       language "C"
       files {root_dir.."src/nfd_cocoa.m"}
+      links {"Foundation.framework", "AppKit.framework"}
 
 
 
@@ -111,6 +112,7 @@ workspace "NativeFileDialog"
       language "C"
       files {root_dir.."src/nfd_gtk.c"}
       buildoptions {"`pkg-config --cflags gtk+-3.0`"}
+      linkoptions { "`pkg-config --libs gtk+-3.0`" }
     filter {"system:linux", "options:linux_backend=zenity"}
       language "C"
       files {root_dir.."src/nfd_zenity.c"}

@@ -13,7 +13,7 @@ endif
 ifeq ($(config),release_x64)
   RESCOMP = windres
   TARGETDIR = ../lib/Release/x64
-  TARGET = $(TARGETDIR)/nfd.lib
+  TARGET = $(TARGETDIR)/nfd.dll
   OBJDIR = obj/x64/Release/nfd
   DEFINES += -DNDEBUG -DUNICODE -D_UNICODE
   INCLUDES += -I../../src/include
@@ -24,8 +24,8 @@ ifeq ($(config),release_x64)
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS +=
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
-  LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
+  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -shared -Wl,--out-implib="../lib/Release/x64/nfd.lib" -s
+  LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS
@@ -42,7 +42,7 @@ endif
 ifeq ($(config),release_x86)
   RESCOMP = windres
   TARGETDIR = ../lib/Release/x86
-  TARGET = $(TARGETDIR)/nfd.lib
+  TARGET = $(TARGETDIR)/nfd.dll
   OBJDIR = obj/x86/Release/nfd
   DEFINES += -DNDEBUG -DUNICODE -D_UNICODE
   INCLUDES += -I../../src/include
@@ -53,8 +53,8 @@ ifeq ($(config),release_x86)
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS +=
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib32 -m32 -s
-  LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
+  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib32 -m32 -shared -Wl,--out-implib="../lib/Release/x86/nfd.lib" -s
+  LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS
@@ -71,7 +71,7 @@ endif
 ifeq ($(config),debug_x64)
   RESCOMP = windres
   TARGETDIR = ../lib/Debug/x64
-  TARGET = $(TARGETDIR)/nfd_d.lib
+  TARGET = $(TARGETDIR)/nfd_d.dll
   OBJDIR = obj/x64/Debug/nfd
   DEFINES += -DDEBUG -DUNICODE -D_UNICODE
   INCLUDES += -I../../src/include
@@ -82,8 +82,8 @@ ifeq ($(config),debug_x64)
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS +=
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64
-  LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
+  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -shared -Wl,--out-implib="../lib/Debug/x64/nfd_d.lib"
+  LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS
@@ -100,7 +100,7 @@ endif
 ifeq ($(config),debug_x86)
   RESCOMP = windres
   TARGETDIR = ../lib/Debug/x86
-  TARGET = $(TARGETDIR)/nfd_d.lib
+  TARGET = $(TARGETDIR)/nfd_d.dll
   OBJDIR = obj/x86/Debug/nfd
   DEFINES += -DDEBUG -DUNICODE -D_UNICODE
   INCLUDES += -I../../src/include
@@ -111,8 +111,8 @@ ifeq ($(config),debug_x86)
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS +=
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib32 -m32
-  LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
+  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib32 -m32 -shared -Wl,--out-implib="../lib/Debug/x86/nfd_d.lib"
+  LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS

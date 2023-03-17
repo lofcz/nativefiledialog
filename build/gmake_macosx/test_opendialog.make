@@ -30,9 +30,9 @@ ifeq ($(config),release_x64)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -target x86_64-apple-macos10.12
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -target x86_64-apple-macos10.12
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += ../lib/Release/x64/libnfd.a -framework Foundation -framework AppKit
-  LDDEPS += ../lib/Release/x64/libnfd.a
-  ALL_LDFLAGS += $(LDFLAGS) -L../lib/Release/x64 -m64 -target x86_64-apple-macos10.12
+  LIBS += ../lib/Release/x64/libnfd.dylib -framework Foundation -framework AppKit
+  LDDEPS += ../lib/Release/x64/libnfd.dylib
+  ALL_LDFLAGS += $(LDFLAGS) -L../lib/Release/x64 -Wl,-rpath,'@loader_path/../lib/Release/x64' -m64 -target x86_64-apple-macos10.12
   LINKCMD = $(CC) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
@@ -65,9 +65,9 @@ ifeq ($(config),release_arm64)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -O2 -target arm64-apple-macos11
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -O2 -target arm64-apple-macos11
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += ../lib/Release/arm64/libnfd.a -framework Foundation -framework AppKit
-  LDDEPS += ../lib/Release/arm64/libnfd.a
-  ALL_LDFLAGS += $(LDFLAGS) -L../lib/Release/arm64 -target arm64-apple-macos11
+  LIBS += ../lib/Release/arm64/libnfd.dylib -framework Foundation -framework AppKit
+  LDDEPS += ../lib/Release/arm64/libnfd.dylib
+  ALL_LDFLAGS += $(LDFLAGS) -L../lib/Release/arm64 -Wl,-rpath,'@loader_path/../lib/Release/arm64' -target arm64-apple-macos11
   LINKCMD = $(CC) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef

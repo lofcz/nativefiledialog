@@ -9,6 +9,8 @@
 #    define _CRT_SECURE_NO_WARNINGS
 #endif
 
+#define MODULE_API_EXPORTS
+
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
@@ -22,21 +24,18 @@ static char g_errorstr[NFD_MAX_STRLEN] = {0};
 
 /* public routines */
 
-const char*
-NFD_GetError(void)
+NATIVE_FILE_DIALOG_MODULE_API const char *NFD_GetError(void)
 {
     return g_errorstr;
 }
 
-size_t
-NFD_PathSet_GetCount(const nfdpathset_t* pathset)
+NATIVE_FILE_DIALOG_MODULE_API size_t NFD_PathSet_GetCount(const nfdpathset_t *pathset)
 {
     assert(pathset);
     return pathset->count;
 }
 
-nfdchar_t*
-NFD_PathSet_GetPath(const nfdpathset_t* pathset, size_t num)
+NATIVE_FILE_DIALOG_MODULE_API nfdchar_t *NFD_PathSet_GetPath(const nfdpathset_t *pathset, size_t num)
 {
     assert(pathset);
     assert(num < pathset->count);
@@ -44,16 +43,27 @@ NFD_PathSet_GetPath(const nfdpathset_t* pathset, size_t num)
     return pathset->buf + pathset->indices[num];
 }
 
-void
-NFD_PathSet_Free(nfdpathset_t* pathset)
+NATIVE_FILE_DIALOG_MODULE_API void NFD_PathSet_Free(nfdpathset_t *pathset)
 {
     assert(pathset);
     NFDi_Free(pathset->indices);
     NFDi_Free(pathset->buf);
 }
 
-void
-NFD_Free(void* ptr)
+NATIVE_FILE_DIALOG_MODULE_API void NFD_Dummy()
+{
+    // function that does nothing, its purpose is
+    // for binding libraries to detect potential problems ahead of time
+}
+
+// make the allocation/deallocation public to prevent mismatching allocators
+// in case the host program uses a different implementation of malloc/free than the library does
+void *NFD_Malloc(size_t bytes)
+{
+    return NFDi_Malloc(bytes);
+}
+
+void NFD_Free(void* ptr)
 {
     NFDi_Free(ptr);
 }

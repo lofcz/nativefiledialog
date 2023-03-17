@@ -21,19 +21,19 @@ ifeq ($(config),release_x64)
     AR = ar
   endif
   TARGETDIR = ../lib/Release/x64
-  TARGET = $(TARGETDIR)/libnfd.a
+  TARGET = $(TARGETDIR)/libnfd.dylib
   OBJDIR = ../obj/x64/Release/nfd
   DEFINES += -DNDEBUG
   INCLUDES += -I../../src/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -Wall -Wextra -target x86_64-apple-macos10.12 -fno-exceptions
-  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -Wall -Wextra -target x86_64-apple-macos10.12 -fno-exceptions
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -fPIC -Wall -Wextra -target x86_64-apple-macos10.12 -fno-exceptions
+  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -fPIC -Wall -Wextra -target x86_64-apple-macos10.12 -fno-exceptions
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS +=
+  LIBS += -framework Foundation -framework AppKit
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -m64 -target x86_64-apple-macos10.12
-  LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
+  ALL_LDFLAGS += $(LDFLAGS) -m64 -dynamiclib -Wl,-install_name,@rpath/libnfd.dylib -target x86_64-apple-macos10.12
+  LINKCMD = $(CC) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS
@@ -58,19 +58,19 @@ ifeq ($(config),release_arm64)
     AR = ar
   endif
   TARGETDIR = ../lib/Release/arm64
-  TARGET = $(TARGETDIR)/libnfd.a
+  TARGET = $(TARGETDIR)/libnfd.dylib
   OBJDIR = ../obj/arm64/Release/nfd
   DEFINES += -DNDEBUG
   INCLUDES += -I../../src/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -O2 -Wall -Wextra -target arm64-apple-macos11 -fno-exceptions
-  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -O2 -Wall -Wextra -target arm64-apple-macos11 -fno-exceptions
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -O2 -fPIC -Wall -Wextra -target arm64-apple-macos11 -fno-exceptions
+  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -O2 -fPIC -Wall -Wextra -target arm64-apple-macos11 -fno-exceptions
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS +=
+  LIBS += -framework Foundation -framework AppKit
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -target arm64-apple-macos11
-  LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
+  ALL_LDFLAGS += $(LDFLAGS) -dynamiclib -Wl,-install_name,@rpath/libnfd.dylib -target arm64-apple-macos11
+  LINKCMD = $(CC) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS
@@ -95,19 +95,19 @@ ifeq ($(config),debug_x64)
     AR = ar
   endif
   TARGETDIR = ../lib/Debug/x64
-  TARGET = $(TARGETDIR)/libnfd_d.a
+  TARGET = $(TARGETDIR)/libnfd_d.dylib
   OBJDIR = ../obj/x64/Debug/nfd
   DEFINES += -DDEBUG
   INCLUDES += -I../../src/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -Wall -Wextra -target x86_64-apple-macos10.12 -fno-exceptions
-  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -Wall -Wextra -target x86_64-apple-macos10.12 -fno-exceptions
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -g -Wall -Wextra -target x86_64-apple-macos10.12 -fno-exceptions
+  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -g -Wall -Wextra -target x86_64-apple-macos10.12 -fno-exceptions
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS +=
+  LIBS += -framework Foundation -framework AppKit
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -m64 -target x86_64-apple-macos10.12
-  LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
+  ALL_LDFLAGS += $(LDFLAGS) -m64 -dynamiclib -Wl,-install_name,@rpath/libnfd_d.dylib -target x86_64-apple-macos10.12
+  LINKCMD = $(CC) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS
@@ -132,19 +132,19 @@ ifeq ($(config),debug_arm64)
     AR = ar
   endif
   TARGETDIR = ../lib/Debug/arm64
-  TARGET = $(TARGETDIR)/libnfd_d.a
+  TARGET = $(TARGETDIR)/libnfd_d.dylib
   OBJDIR = ../obj/arm64/Debug/nfd
   DEFINES += -DDEBUG
   INCLUDES += -I../../src/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -g -Wall -Wextra -target arm64-apple-macos11 -fno-exceptions
-  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -g -Wall -Wextra -target arm64-apple-macos11 -fno-exceptions
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -fPIC -g -Wall -Wextra -target arm64-apple-macos11 -fno-exceptions
+  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -fPIC -g -Wall -Wextra -target arm64-apple-macos11 -fno-exceptions
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS +=
+  LIBS += -framework Foundation -framework AppKit
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -target arm64-apple-macos11
-  LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
+  ALL_LDFLAGS += $(LDFLAGS) -dynamiclib -Wl,-install_name,@rpath/libnfd_d.dylib -target arm64-apple-macos11
+  LINKCMD = $(CC) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS

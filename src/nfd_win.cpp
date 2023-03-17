@@ -4,6 +4,7 @@
   http://www.frogtoss.com/labs
  */
 
+#define MODULE_API_EXPORTS
 
 #ifdef __MINGW32__
 // Explicitly setting NTDDI version, this is necessary for the MinGW compiler
@@ -404,9 +405,12 @@ SetDefaultFile(IFileDialog* dialog, const char* defaultPath)
 
 /* public */
 
-
+NATIVE_FILE_DIALOG_MODULE_API
 nfdresult_t
-NFD_OpenDialog(const nfdchar_t* filterList, const nfdchar_t* defaultPath, nfdchar_t** outPath)
+NFD_OpenDialog(
+    const nfdchar_t *filterList,
+    const nfdchar_t *defaultPath,
+    nfdchar_t **outPath)
 {
     nfdresult_t nfdResult = NFD_ERROR;
 
@@ -487,10 +491,10 @@ end:
     return nfdResult;
 }
 
-nfdresult_t
-NFD_OpenDialogMultiple(const nfdchar_t* filterList,
-                       const nfdchar_t* defaultPath,
-                       nfdpathset_t*    outPaths)
+NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_OpenDialogMultiple(
+    const nfdchar_t *filterList,
+    const nfdchar_t *defaultPath,
+    nfdpathset_t *outPaths)
 {
     nfdresult_t nfdResult = NFD_ERROR;
 
@@ -574,8 +578,10 @@ end:
     return nfdResult;
 }
 
-nfdresult_t
-NFD_SaveDialog(const nfdchar_t* filterList, const nfdchar_t* defaultPath, nfdchar_t** outPath)
+NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_SaveDialog(
+    const nfdchar_t *filterList,
+    const nfdchar_t *defaultPath,
+    nfdchar_t **outPath )
 {
     nfdresult_t nfdResult = NFD_ERROR;
 
@@ -658,8 +664,9 @@ end:
 
 
 
-nfdresult_t
-NFD_PickFolder(const nfdchar_t* defaultPath, nfdchar_t** outPath)
+NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_PickFolder(
+    const nfdchar_t *defaultPath,
+    nfdchar_t **outPath)
 {
     nfdresult_t nfdResult = NFD_ERROR;
     DWORD       dwOptions = 0;
