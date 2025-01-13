@@ -1,5 +1,3 @@
-// copied from: https://github.com/wheybags/simple_exec/blob/5a74c507c4ce1b2bb166177ead4cca7cfa23cb35/simple_exec.h
-
 // simple_exec.h, single header library to run external programs + retrieve their status code and output (unix only for now)
 //
 // do this:
@@ -28,7 +26,7 @@ int runCommandArray(char** stdOut, int* stdOutByteCount, int* returnCode, int in
 #include <stdarg.h>
 #include <fcntl.h>
 
-#define release_assert(exp) { if (!(exp)) { abort(); } }
+#define release_assert(x) do { int __release_assert_tmp__ = (x); assert(__release_assert_tmp__); } while(0)
 
 enum PIPE_FILE_DESCRIPTORS
 {
@@ -70,14 +68,13 @@ int runCommandArray(char** stdOut, int* stdOutByteCount, int* returnCode, int in
         case -1:
         {
             release_assert(0 && "Fork failed");
-            break;
         }
 
         case 0: // child
         {
             release_assert(dup2(parentToChild[READ_FD ], STDIN_FILENO ) != -1);
             release_assert(dup2(childToParent[WRITE_FD], STDOUT_FILENO) != -1);
-            
+
             if(includeStdErr)
             {
                 release_assert(dup2(childToParent[WRITE_FD], STDERR_FILENO) != -1);
@@ -92,14 +89,13 @@ int runCommandArray(char** stdOut, int* stdOutByteCount, int* returnCode, int in
             release_assert(close(parentToChild[WRITE_FD]) == 0);
             release_assert(close(childToParent[READ_FD ]) == 0);
             release_assert(close(errPipe[READ_FD]) == 0);
-            
+
             const char* command = allArgs[0];
             execvp(command, allArgs);
 
             char err = 1;
-            ssize_t result = write(errPipe[WRITE_FD], &err, 1);
-            release_assert(result != -1);
-            
+            write(errPipe[WRITE_FD], &err, 1);
+
             close(errPipe[WRITE_FD]);
             close(parentToChild[READ_FD]);
             close(childToParent[WRITE_FD]);
@@ -130,20 +126,19 @@ int runCommandArray(char** stdOut, int* stdOutByteCount, int* returnCode, int in
                         release_assert(close(childToParent[READ_FD]) == 0);
 
                         char errChar = 0;
-                        ssize_t result = read(errPipe[READ_FD], &errChar, 1);
-                        release_assert(result != -1);
+                        read(errPipe[READ_FD], &errChar, 1);
                         close(errPipe[READ_FD]);
 
                         if(errChar)
                         {
-                            free(dataReadFromChild); 
+                            free(dataReadFromChild);
                             return COMMAND_NOT_FOUND;
                         }
-                        
+
                         // free any un-needed memory with realloc + add a null terminator for convenience
                         dataReadFromChild = (char*)realloc(dataReadFromChild, dataReadFromChildUsed + 1);
                         dataReadFromChild[dataReadFromChildUsed] = '\0';
-                        
+
                         if(stdOut != NULL)
                             *stdOut = dataReadFromChild;
                         else
@@ -159,7 +154,6 @@ int runCommandArray(char** stdOut, int* stdOutByteCount, int* returnCode, int in
                     case -1:
                     {
                         release_assert(0 && "read() failed");
-                        break;
                     }
 
                     default:
@@ -184,14 +178,14 @@ int runCommand(char** stdOut, int* stdOutByteCount, int* returnCode, int include
 {
     va_list vl;
     va_start(vl, command);
-      
+
     char* currArg = NULL;
-      
+
     int allArgsInitialSize = 16;
     int allArgsSize = allArgsInitialSize;
     char** allArgs = (char**)malloc(sizeof(char*) * allArgsSize);
     allArgs[0] = command;
-        
+
     int i = 1;
     do
     {

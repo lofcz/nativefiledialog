@@ -179,3 +179,10 @@ UpgradeLog*.htm
 *.bim_*.settings
 # Microsoft Fakes
 FakesAssemblies/
+.idea
+.vs
+build
+build32
+build64
+cmake-build-debug
+build_linux

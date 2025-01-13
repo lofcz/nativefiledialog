@@ -52,6 +52,15 @@ NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_OpenDialog(
     const nfdchar_t *defaultPath,
     nfdchar_t **outPath );
 
+    NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_OpenDialogEx(
+        const nfdchar_t *filterList,
+        const nfdchar_t *defaultPath,
+        const nfdchar_t *dialogTitle,
+        const nfdchar_t *fileNameLabel,
+        const nfdchar_t *selectButtonLabel,
+        const nfdchar_t *cancelButtonLabel,
+        nfdchar_t **outPath );
+
 /* multiple file open dialog */    
 NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_OpenDialogMultiple(
     const nfdchar_t *filterList,

@@ -165,6 +165,76 @@ static void WaitForCleanup(void)
                                  
 /* public */
 
+nfdresult_t NFD_OpenDialogEx(
+    const nfdchar_t *filterList,
+    const nfdchar_t *defaultPath,
+    const nfdchar_t *dialogTitle,
+    const nfdchar_t *fileNameLabel,
+    const nfdchar_t *selectButtonLabel,
+    const nfdchar_t *cancelButtonLabel,
+    nfdchar_t **outPath )
+{
+    GtkWidget *dialog;
+    nfdresult_t result;
+
+    if ( !gtk_init_check( NULL, NULL ) )
+    {
+        NFDi_SetError(INIT_FAIL_MSG);
+        return NFD_ERROR;
+    }
+
+    dialog = gtk_file_chooser_dialog_new( dialogTitle ? dialogTitle : "Open File",
+                                          NULL,
+                                          GTK_FILE_CHOOSER_ACTION_OPEN,
+                                          cancelButtonLabel ? cancelButtonLabel : "_Cancel",
+                                          GTK_RESPONSE_CANCEL,
+                                          selectButtonLabel ? selectButtonLabel : "_Open",
+                                          GTK_RESPONSE_ACCEPT,
+                                          NULL );
+
+    if (fileNameLabel) {
+        GtkWidget *label = gtk_label_new(fileNameLabel);
+        gtk_widget_show(label);
+        gtk_file_chooser_set_extra_widget(GTK_FILE_CHOOSER(dialog), label);
+    }
+
+    /* Build the filter list */
+    AddFiltersToDialog(dialog, filterList);
+
+    /* Set the default path */
+    SetDefaultPath(dialog, defaultPath);
+
+    result = NFD_CANCEL;
+    if ( gtk_dialog_run( GTK_DIALOG(dialog) ) == GTK_RESPONSE_ACCEPT )
+    {
+        char *filename;
+
+        filename = gtk_file_chooser_get_filename( GTK_FILE_CHOOSER(dialog) );
+
+        {
+            size_t len = strlen(filename);
+            *outPath = NFDi_Malloc( len + 1 );
+            memcpy( *outPath, filename, len + 1 );
+            if ( !*outPath )
+            {
+                g_free( filename );
+                gtk_widget_destroy(dialog);
+                return NFD_ERROR;
+            }
+        }
+        g_free( filename );
+
+        result = NFD_OKAY;
+    }
+
+    WaitForCleanup();
+    gtk_widget_destroy(dialog);
+    WaitForCleanup();
+
+    return result;
+}
+
+
 nfdresult_t NFD_OpenDialog( const nfdchar_t *filterList,
                             const nfdchar_t *defaultPath,
                             nfdchar_t **outPath )

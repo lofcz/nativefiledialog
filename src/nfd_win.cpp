@@ -28,8 +28,28 @@
 #include <shobjidl.h>
 #include "nfd_common.h"
 
+#include <ShellScalingApi.h>
+#pragma comment(lib, "Shcore.lib")
+
 
 #define COM_INITFLAGS ::COINIT_APARTMENTTHREADED | ::COINIT_DISABLE_OLE1DDE
+
+#define SET_DPI_AWARENESS() \
+do { \
+HMODULE hUser32 = LoadLibraryW(L"user32.dll"); \
+if (hUser32) \
+{ \
+typedef BOOL(WINAPI* SetProcessDpiAwarenessContextPtr)(DPI_AWARENESS_CONTEXT); \
+SetProcessDpiAwarenessContextPtr setProcessDpiAwarenessContext = \
+(SetProcessDpiAwarenessContextPtr)GetProcAddress(hUser32, "SetProcessDpiAwarenessContext"); \
+if (setProcessDpiAwarenessContext) \
+{ \
+setProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2); \
+} \
+FreeLibrary(hUser32); \
+} \
+} while(0)
+
 
 static BOOL COMIsInitialized(HRESULT coResult)
 {
@@ -45,7 +65,7 @@ static BOOL COMIsInitialized(HRESULT coResult)
 
 static HRESULT COMInit(void)
 {
-    return ::CoInitializeEx(NULL, COM_INITFLAGS);
+    return ::CoInitializeEx(nullptr, COM_INITFLAGS);
 }
 
 static void COMUninit(HRESULT coResult)
@@ -59,10 +79,10 @@ static void COMUninit(HRESULT coResult)
 // allocs the space in outPath -- call free()
 static void CopyWCharToNFDChar( const wchar_t *inStr, nfdchar_t **outStr )
 {
-    int inStrCharacterCount = static_cast<int>(wcslen(inStr)); 
+    int inStrCharacterCount = static_cast<int>(wcslen(inStr));
     int bytesNeeded = WideCharToMultiByte( CP_UTF8, 0,
                                            inStr, inStrCharacterCount,
-                                           NULL, 0, NULL, NULL );    
+                                           nullptr, 0, nullptr, nullptr);
     assert( bytesNeeded );
     bytesNeeded += 1;
 
@@ -73,7 +93,7 @@ static void CopyWCharToNFDChar( const wchar_t *inStr, nfdchar_t **outStr )
     int bytesWritten = WideCharToMultiByte( CP_UTF8, 0,
                                             inStr, -1,
                                             *outStr, bytesNeeded,
-                                            NULL, NULL );
+                                            nullptr, nullptr);
     assert( bytesWritten ); _NFD_UNUSED( bytesWritten );
 }
 
@@ -82,7 +102,7 @@ static size_t GetUTF8ByteCountForWChar( const wchar_t *str )
 {
     size_t bytesNeeded = WideCharToMultiByte( CP_UTF8, 0,
                                               str, -1,
-                                              NULL, 0, NULL, NULL );
+                                              nullptr, 0, nullptr, nullptr);
     assert( bytesNeeded );
     return bytesNeeded+1;
 }
@@ -96,7 +116,7 @@ static int CopyWCharToExistingNFDCharBuffer( const wchar_t *inStr, nfdchar_t *ou
     int bytesWritten = WideCharToMultiByte( CP_UTF8, 0,
                                             inStr, -1,
                                             outPtr, bytesNeeded,
-                                            NULL, 0 );
+                                            nullptr, nullptr );
     assert( bytesWritten );
 
     return bytesWritten;
@@ -110,14 +130,14 @@ static void CopyNFDCharToWChar( const nfdchar_t *inStr, wchar_t **outStr )
     int inStrByteCount = static_cast<int>(strlen(inStr));
     int charsNeeded = MultiByteToWideChar(CP_UTF8, 0,
                                           inStr, inStrByteCount,
-                                          NULL, 0 );    
+                                          nullptr, 0 );
     assert( charsNeeded );
     assert( !*outStr );
     charsNeeded += 1; // terminator
-    
-    *outStr = (wchar_t*)NFDi_Malloc( charsNeeded * sizeof(wchar_t) );    
+
+    *outStr = (wchar_t*)NFDi_Malloc( charsNeeded * sizeof(wchar_t) );
     if ( !*outStr )
-        return;        
+        return;
 
     int ret = MultiByteToWideChar(CP_UTF8, 0,
                                   inStr, inStrByteCount,
@@ -138,7 +158,7 @@ static int AppendExtensionToSpecBuf( const char *ext, char *specBuf, size_t spec
 {
     const char SEP[] = ";";
     assert( specBufLen > strlen(ext)+3 );
-    
+
     if ( strlen(specBuf) > 0 )
     {
         strncat( specBuf, SEP, specBufLen - strlen(specBuf) - 1 );
@@ -149,7 +169,7 @@ static int AppendExtensionToSpecBuf( const char *ext, char *specBuf, size_t spec
     int bytesWritten = sprintf_s( extWildcard, NFD_MAX_STRLEN, "*.%s", ext );
     assert( bytesWritten == (int)(strlen(ext)+2) );
     _NFD_UNUSED(bytesWritten);
-    
+
     strncat( specBuf, extWildcard, specBufLen - strlen(specBuf) - 1 );
 
     return NFD_OKAY;
@@ -169,7 +189,7 @@ static nfdresult_t AddFiltersToDialog( ::IFileDialog *fileOpenDialog, const char
     {
         if ( *p_filterList == ';' )
             ++filterCount;
-    }    
+    }
 
     assert(filterCount);
     if ( !filterCount )
@@ -186,8 +206,8 @@ static nfdresult_t AddFiltersToDialog( ::IFileDialog *fileOpenDialog, const char
     }
     for (UINT i = 0; i < filterCount+1; ++i )
     {
-        specList[i].pszName = NULL;
-        specList[i].pszSpec = NULL;
+        specList[i].pszName = nullptr;
+        specList[i].pszSpec = nullptr;
     }
 
     size_t specIdx = 0;
@@ -197,12 +217,12 @@ static nfdresult_t AddFiltersToDialog( ::IFileDialog *fileOpenDialog, const char
 
     char specbuf[NFD_MAX_STRLEN] = {0}; /* one per semicolon */
 
-    while ( 1 ) 
+    while ( 1 )
     {
         if ( NFDi_IsFilterSegmentChar(*p_filterList) )
         {
             /* append a type to the specbuf (pending filter) */
-            AppendExtensionToSpecBuf( typebuf, specbuf, NFD_MAX_STRLEN );            
+            AppendExtensionToSpecBuf( typebuf, specbuf, NFD_MAX_STRLEN );
 
             p_typebuf = typebuf;
             memset( typebuf, 0, sizeof(char)*NFD_MAX_STRLEN );
@@ -211,10 +231,10 @@ static nfdresult_t AddFiltersToDialog( ::IFileDialog *fileOpenDialog, const char
         if ( *p_filterList == ';' || *p_filterList == '\0' )
         {
             /* end of filter -- add it to specList */
-                                
+
             CopyNFDCharToWChar( specbuf, (wchar_t**)&specList[specIdx].pszName );
             CopyNFDCharToWChar( specbuf, (wchar_t**)&specList[specIdx].pszSpec );
-                        
+
             memset( specbuf, 0, sizeof(char)*NFD_MAX_STRLEN );
             ++specIdx;
             if ( specIdx == filterCount )
@@ -233,7 +253,7 @@ static nfdresult_t AddFiltersToDialog( ::IFileDialog *fileOpenDialog, const char
     /* Add wildcard */
     specList[specIdx].pszSpec = WILDCARD;
     specList[specIdx].pszName = WILDCARD;
-    
+
     fileOpenDialog->SetFileTypes( filterCount+1, specList );
 
     /* free speclist */
@@ -241,7 +261,7 @@ static nfdresult_t AddFiltersToDialog( ::IFileDialog *fileOpenDialog, const char
     {
         NFDi_Free( (void*)specList[i].pszSpec );
     }
-    NFDi_Free( specList );    
+    NFDi_Free( specList );
 
     return NFD_OKAY;
 }
@@ -252,7 +272,7 @@ static nfdresult_t AllocPathSet( IShellItemArray *shellItems, nfdpathset_t *path
 
     assert(shellItems);
     assert(pathSet);
-    
+
     // How many items in shellItems?
     DWORD numShellItems;
     HRESULT result = shellItems->GetCount(&numShellItems);
@@ -299,7 +319,7 @@ static nfdresult_t AllocPathSet( IShellItemArray *shellItems, nfdpathset_t *path
 
         // Calculate length of name with UTF-8 encoding
         bufSize += GetUTF8ByteCountForWChar( name );
-        
+
         CoTaskMemFree(name);
     }
 
@@ -340,10 +360,10 @@ static nfdresult_t AllocPathSet( IShellItemArray *shellItems, nfdpathset_t *path
         ptrdiff_t index = p_buf - pathSet->buf;
         assert( index >= 0 );
         pathSet->indices[i] = static_cast<size_t>(index);
-        
-        p_buf += bytesWritten; 
+
+        p_buf += bytesWritten;
     }
-     
+
     return NFD_OKAY;
 }
 
@@ -353,11 +373,11 @@ static nfdresult_t SetDefaultPath( IFileDialog *dialog, const char *defaultPath 
     if ( !defaultPath || strlen(defaultPath) == 0 )
         return NFD_OKAY;
 
-    wchar_t *defaultPathW = {0};
+    wchar_t *defaultPathW = {nullptr};
     CopyNFDCharToWChar( defaultPath, &defaultPathW );
 
     IShellItem *folder;
-    HRESULT result = SHCreateItemFromParsingName( defaultPathW, NULL, IID_PPV_ARGS(&folder) );
+    HRESULT result = SHCreateItemFromParsingName( defaultPathW, nullptr, IID_PPV_ARGS(&folder) );
 
     // Valid non results.
     if ( result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) || result == HRESULT_FROM_WIN32(ERROR_INVALID_DRIVE) )
@@ -372,40 +392,67 @@ static nfdresult_t SetDefaultPath( IFileDialog *dialog, const char *defaultPath 
         NFDi_Free( defaultPathW );
         return NFD_ERROR;
     }
-    
+
     // Could also call SetDefaultFolder(), but this guarantees defaultPath -- more consistency across API.
     dialog->SetFolder( folder );
 
     NFDi_Free( defaultPathW );
     folder->Release();
-    
+
     return NFD_OKAY;
+}
+
+static wchar_t* g_buttonText = nullptr;
+
+LRESULT CALLBACK CBTProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    if (nCode >= 0)
+    {
+        CWPSTRUCT* msg = (CWPSTRUCT*)lParam;
+        if (msg->message == WM_INITDIALOG)
+        {
+            HWND cancelBtn = GetDlgItem(msg->hwnd, IDCANCEL);
+            if (cancelBtn && g_buttonText)
+            {
+                SetWindowTextW(cancelBtn, g_buttonText);
+                NFDi_Free(g_buttonText);
+                g_buttonText = nullptr;
+            }
+        }
+    }
+    return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
 /* public */
 
-
-NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_OpenDialog(
+NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_OpenDialogEx(
     const nfdchar_t *filterList,
     const nfdchar_t *defaultPath,
+    const nfdchar_t *dialogTitle,
+    const nfdchar_t *fileNameLabel,
+    const nfdchar_t *selectButtonLabel,
+    const nfdchar_t *cancelButtonLabel,
     nfdchar_t **outPath )
 {
-    nfdresult_t nfdResult = NFD_ERROR;
+    SET_DPI_AWARENESS();
 
-    
+    nfdresult_t nfdResult = NFD_ERROR;
+    HHOOK hook = nullptr;
+    HWND ownerWindow = GetActiveWindow(); // nebo handle vašeho hlavního okna
     HRESULT coResult = COMInit();
+
     if (!COMIsInitialized(coResult))
-    {        
+    {
         NFDi_SetError("Could not initialize COM.");
         return nfdResult;
     }
 
     // Create dialog
-    ::IFileOpenDialog *fileOpenDialog(NULL);    
-    HRESULT result = ::CoCreateInstance(::CLSID_FileOpenDialog, NULL,
+    ::IFileOpenDialog *fileOpenDialog(nullptr);
+    HRESULT result = ::CoCreateInstance(::CLSID_FileOpenDialog, nullptr,
                                         CLSCTX_ALL, ::IID_IFileOpenDialog,
                                         reinterpret_cast<void**>(&fileOpenDialog) );
-                                
+
     if ( !SUCCEEDED(result) )
     {
         NFDi_SetError("Could not create dialog.");
@@ -422,21 +469,166 @@ NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_OpenDialog(
     if ( !SetDefaultPath( fileOpenDialog, defaultPath ) )
     {
         goto end;
-    }    
+    }
 
-    // Show the dialog.
-    result = fileOpenDialog->Show(NULL);
+    // Set the title
+    if ( dialogTitle && dialogTitle[0] != '\0' )
+    {
+        wchar_t *titleW = nullptr;
+        CopyNFDCharToWChar( dialogTitle, &titleW );
+        if ( titleW )
+        {
+            fileOpenDialog->SetTitle(titleW);
+            NFDi_Free( titleW );
+        }
+    }
+
+    // Labels customization:
+    if ( fileNameLabel && fileNameLabel[0] != '\0' ) {
+
+        wchar_t *titleW = nullptr;
+        CopyNFDCharToWChar( fileNameLabel, &titleW );
+        if ( titleW )
+        {
+            fileOpenDialog->SetFileNameLabel(titleW);
+            NFDi_Free( titleW );
+        }
+    }
+
+    if ( selectButtonLabel && selectButtonLabel[0] != '\0' ) {
+
+        wchar_t *titleW = nullptr;
+        CopyNFDCharToWChar( selectButtonLabel, &titleW );
+        if ( titleW )
+        {
+            fileOpenDialog->SetOkButtonLabel(titleW);
+            NFDi_Free( titleW );
+        }
+    }
+
+    if ( cancelButtonLabel && cancelButtonLabel[0] != '\0' ) {
+
+        wchar_t *titleW = nullptr;
+        CopyNFDCharToWChar( cancelButtonLabel, &titleW );
+        if ( titleW )
+        {
+            g_buttonText = titleW;
+            hook = SetWindowsHookEx(WH_CALLWNDPROC, CBTProc, nullptr, GetCurrentThreadId());
+        }
+    }
+
+    // Show
+    result = fileOpenDialog->Show(nullptr);
+
     if ( SUCCEEDED(result) )
     {
         // Get the file name
-        ::IShellItem *shellItem(NULL);
+        ::IShellItem *shellItem(nullptr);
         result = fileOpenDialog->GetResult(&shellItem);
         if ( !SUCCEEDED(result) )
         {
             NFDi_SetError("Could not get shell item from dialog.");
             goto end;
         }
-        wchar_t *filePath(NULL);
+        wchar_t *filePath(nullptr);
+        result = shellItem->GetDisplayName(::SIGDN_FILESYSPATH, &filePath);
+        if ( !SUCCEEDED(result) )
+        {
+            NFDi_SetError("Could not get file path for selected.");
+            shellItem->Release();
+            goto end;
+        }
+
+        CopyWCharToNFDChar( filePath, outPath );
+        CoTaskMemFree(filePath);
+        if ( !*outPath )
+        {
+            /* error is malloc-based, error message would be redundant */
+            shellItem->Release();
+            goto end;
+        }
+
+        nfdResult = NFD_OKAY;
+        shellItem->Release();
+    }
+    else if (result == HRESULT_FROM_WIN32(ERROR_CANCELLED) )
+    {
+        nfdResult = NFD_CANCEL;
+    }
+    else
+    {
+        NFDi_SetError("File dialog box show failed.");
+        nfdResult = NFD_ERROR;
+    }
+
+end:
+    if (hook)
+    {
+        UnhookWindowsHookEx(hook);
+    }
+
+    if (fileOpenDialog)
+        fileOpenDialog->Release();
+
+    COMUninit(coResult);
+
+    return nfdResult;
+}
+
+NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_OpenDialog(
+    const nfdchar_t *filterList,
+    const nfdchar_t *defaultPath,
+    nfdchar_t **outPath )
+{
+    SET_DPI_AWARENESS();
+
+    nfdresult_t nfdResult = NFD_ERROR;
+
+
+    HRESULT coResult = COMInit();
+    if (!COMIsInitialized(coResult))
+    {
+        NFDi_SetError("Could not initialize COM.");
+        return nfdResult;
+    }
+
+    // Create dialog
+    ::IFileOpenDialog *fileOpenDialog(nullptr);
+    HRESULT result = ::CoCreateInstance(::CLSID_FileOpenDialog, nullptr,
+                                        CLSCTX_ALL, ::IID_IFileOpenDialog,
+                                        reinterpret_cast<void**>(&fileOpenDialog) );
+
+    if ( !SUCCEEDED(result) )
+    {
+        NFDi_SetError("Could not create dialog.");
+        goto end;
+    }
+
+    // Build the filter list
+    if ( !AddFiltersToDialog( fileOpenDialog, filterList ) )
+    {
+        goto end;
+    }
+
+    // Set the default path
+    if ( !SetDefaultPath( fileOpenDialog, defaultPath ) )
+    {
+        goto end;
+    }
+
+    // Show the dialog.
+    result = fileOpenDialog->Show(nullptr);
+    if ( SUCCEEDED(result) )
+    {
+        // Get the file name
+        ::IShellItem *shellItem(nullptr);
+        result = fileOpenDialog->GetResult(&shellItem);
+        if ( !SUCCEEDED(result) )
+        {
+            NFDi_SetError("Could not get shell item from dialog.");
+            goto end;
+        }
+        wchar_t *filePath(nullptr);
         result = shellItem->GetDisplayName(::SIGDN_FILESYSPATH, &filePath);
         if ( !SUCCEEDED(result) )
         {
@@ -472,7 +664,7 @@ end:
         fileOpenDialog->Release();
 
     COMUninit(coResult);
-    
+
     return nfdResult;
 }
 
@@ -481,25 +673,27 @@ NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_OpenDialogMultiple(
     const nfdchar_t *defaultPath,
     nfdpathset_t *outPaths )
 {
+    SET_DPI_AWARENESS();
+
     nfdresult_t nfdResult = NFD_ERROR;
 
 
     HRESULT coResult = COMInit();
     if (!COMIsInitialized(coResult))
     {
-        NFDi_SetError("Could not initialize COM.");        
+        NFDi_SetError("Could not initialize COM.");
         return nfdResult;
     }
 
     // Create dialog
-    ::IFileOpenDialog *fileOpenDialog(NULL);    
-    HRESULT result = ::CoCreateInstance(::CLSID_FileOpenDialog, NULL,
+    ::IFileOpenDialog *fileOpenDialog(nullptr);
+    HRESULT result = ::CoCreateInstance(::CLSID_FileOpenDialog, nullptr,
                                         CLSCTX_ALL, ::IID_IFileOpenDialog,
                                         reinterpret_cast<void**>(&fileOpenDialog) );
-                                
+
     if ( !SUCCEEDED(result) )
     {
-        fileOpenDialog = NULL;
+        fileOpenDialog = nullptr;
         NFDi_SetError("Could not create dialog.");
         goto end;
     }
@@ -530,9 +724,9 @@ NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_OpenDialogMultiple(
         NFDi_SetError("Could not set options.");
         goto end;
     }
- 
+
     // Show the dialog.
-    result = fileOpenDialog->Show(NULL);
+    result = fileOpenDialog->Show(nullptr);
     if ( SUCCEEDED(result) )
     {
         IShellItemArray *shellItems;
@@ -542,7 +736,7 @@ NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_OpenDialogMultiple(
             NFDi_SetError("Could not get shell items.");
             goto end;
         }
-        
+
         if ( AllocPathSet( shellItems, outPaths ) == NFD_ERROR )
         {
             shellItems->Release();
@@ -567,7 +761,7 @@ end:
         fileOpenDialog->Release();
 
     COMUninit(coResult);
-    
+
     return nfdResult;
 }
 
@@ -576,24 +770,26 @@ NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_SaveDialog(
     const nfdchar_t *defaultPath,
     nfdchar_t **outPath )
 {
+    SET_DPI_AWARENESS();
+
     nfdresult_t nfdResult = NFD_ERROR;
 
     HRESULT coResult = COMInit();
     if (!COMIsInitialized(coResult))
     {
         NFDi_SetError("Could not initialize COM.");
-        return nfdResult;        
+        return nfdResult;
     }
-    
+
     // Create dialog
-    ::IFileSaveDialog *fileSaveDialog(NULL);    
-    HRESULT result = ::CoCreateInstance(::CLSID_FileSaveDialog, NULL,
+    ::IFileSaveDialog *fileSaveDialog(nullptr);
+    HRESULT result = ::CoCreateInstance(::CLSID_FileSaveDialog, nullptr,
                                         CLSCTX_ALL, ::IID_IFileSaveDialog,
                                         reinterpret_cast<void**>(&fileSaveDialog) );
 
     if ( !SUCCEEDED(result) )
     {
-        fileSaveDialog = NULL;
+        fileSaveDialog = nullptr;
         NFDi_SetError("Could not create dialog.");
         goto end;
     }
@@ -611,7 +807,7 @@ NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_SaveDialog(
     }
 
     // Show the dialog.
-    result = fileSaveDialog->Show(NULL);
+    result = fileSaveDialog->Show(nullptr);
     if ( SUCCEEDED(result) )
     {
         // Get the file name
@@ -622,7 +818,7 @@ NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_SaveDialog(
             NFDi_SetError("Could not get shell item from dialog.");
             goto end;
         }
-        wchar_t *filePath(NULL);
+        wchar_t *filePath(nullptr);
         result = shellItem->GetDisplayName(::SIGDN_FILESYSPATH, &filePath);
         if ( !SUCCEEDED(result) )
         {
@@ -652,22 +848,22 @@ NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_SaveDialog(
         NFDi_SetError("File dialog box show failed.");
         nfdResult = NFD_ERROR;
     }
-    
+
 end:
     if ( fileSaveDialog )
         fileSaveDialog->Release();
 
     COMUninit(coResult);
-    
+
     return nfdResult;
 }
-
-
 
 NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_PickFolder(
     const nfdchar_t *defaultPath,
     nfdchar_t **outPath)
 {
+    SET_DPI_AWARENESS();
+
     nfdresult_t nfdResult = NFD_ERROR;
     DWORD dwOptions = 0;
 
@@ -679,13 +875,13 @@ NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_PickFolder(
     }
 
     // Create dialog
-    ::IFileOpenDialog *fileDialog(NULL);
+    ::IFileOpenDialog *fileDialog(nullptr);
     HRESULT result = CoCreateInstance(CLSID_FileOpenDialog,
-                                      NULL,
+                                      nullptr,
                                       CLSCTX_ALL,
                                       IID_PPV_ARGS(&fileDialog));
     if ( !SUCCEEDED(result) )
-    {        
+    {
         NFDi_SetError("CoCreateInstance for CLSID_FileOpenDialog failed.");
         goto end;
     }
@@ -712,11 +908,11 @@ NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_PickFolder(
     }
 
     // Show the dialog to the user
-    result = fileDialog->Show(NULL);
+    result = fileDialog->Show(nullptr);
     if ( SUCCEEDED(result) )
     {
         // Get the folder name
-        ::IShellItem *shellItem(NULL);
+        ::IShellItem *shellItem(nullptr);
 
         result = fileDialog->GetResult(&shellItem);
         if ( !SUCCEEDED(result) )
@@ -726,7 +922,7 @@ NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_PickFolder(
             goto end;
         }
 
-        wchar_t *path = NULL;
+        wchar_t *path = nullptr;
         result = shellItem->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &path);
         if ( !SUCCEEDED(result) )
         {

@@ -1,0 +1,17 @@
+# for x64
+mkdir build64
+cd build64
+cmake -A x64 ..
+cmake --build . --config Release
+
+# for x86
+mkdir build32
+cd build32
+cmake -A Win32 ..
+cmake --build . --config Release
+
+# for linux/gtx
+mkdir build_linux
+cd build_linux
+cmake ..
+make
