@@ -159,6 +159,7 @@ nfdresult_t NFD_OpenDialogEx(
     const nfdchar_t *fileNameLabel,
     const nfdchar_t *selectButtonLabel,
     const nfdchar_t *cancelButtonLabel,
+    void* parentWindow,
     nfdchar_t **outPath )
 {
     GtkWidget *dialog;
@@ -178,6 +179,11 @@ nfdresult_t NFD_OpenDialogEx(
                                           selectButtonLabel ? selectButtonLabel : "_Open",
                                           GTK_RESPONSE_ACCEPT,
                                           NULL );
+
+    if (parentWindow) {
+        gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(parentWindow));
+        gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+    }
 
     if (fileNameLabel) {
         GtkWidget *label = gtk_label_new(fileNameLabel);

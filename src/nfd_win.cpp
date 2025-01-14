@@ -395,14 +395,15 @@ NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_OpenDialogEx(
     const nfdchar_t *fileNameLabel,
     const nfdchar_t *selectButtonLabel,
     const nfdchar_t *cancelButtonLabel,
+    void* parentWindow,
     nfdchar_t **outPath )
 {
     SET_DPI_AWARENESS();
 
     nfdresult_t nfdResult = NFD_ERROR;
     HHOOK hook = nullptr;
-    HWND ownerWindow = GetActiveWindow(); // nebo handle vašeho hlavního okna
     HRESULT coResult = COMInit();
+    HWND hwnd = parentWindow ? static_cast<HWND>(parentWindow) : nullptr;
 
     if (!COMIsInitialized(coResult))
     {
@@ -481,7 +482,7 @@ NATIVE_FILE_DIALOG_MODULE_API nfdresult_t NFD_OpenDialogEx(
     }
 
     // Show
-    result = fileOpenDialog->Show(nullptr);
+    result = fileOpenDialog->Show(hwnd);
 
     if ( SUCCEEDED(result) )
     {

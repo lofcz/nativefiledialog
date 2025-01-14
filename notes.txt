@@ -15,3 +15,9 @@ mkdir build_linux
 cd build_linux
 cmake ..
 make
+
+# for macos
+mkdir build_macos
+cd build_macos
+cmake ..
+make
