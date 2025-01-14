@@ -12,8 +12,8 @@ int main(void)
 {
 
     nfdchar_t *outPath = nullptr;
-    nfdresult_t result = NFD_OpenDialogEx("png,jpg;pdf", nullptr, "Hello world 2", "Open file dialog, custom name", "Select, YAY!", "Abort the mission", &outPath);
-    nfdresult_t result2 = NFD_OpenDialogEx("png,jpg;pdf", nullptr, "Hello world 2", "Open file dialog, custom name", "Select, YAY!", "Abort the mission ABORT ABORT", &outPath);
+    nfdresult_t result = NFD_OpenDialogEx("[My group|pdf];[Super group|ico,txt];*.png,jpg;pdf", nullptr, "Hello world 2", "Open file dialog, custom name", "Select, YAY!", "Abort the mission", &outPath);
+    //nfdresult_t result2 = NFD_OpenDialogEx("png,jpg;pdf", nullptr, "Hello world 2", "Open file dialog, custom name", "Select, YAY!", "Abort the mission ABORT ABORT", &outPath);
 
     if (result == NFD_OKAY)
     {

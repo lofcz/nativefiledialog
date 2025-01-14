@@ -36,6 +36,19 @@ if(WIN32)
     set(PLATFORM_DEFINITIONS
             MODULE_API_EXPORTS
     )
+elseif(APPLE)
+    set(PLATFORM_SOURCES
+            src/nfd_cocoa.m
+            src/nfd_common.c
+    )
+
+    set(PLATFORM_LIBS
+            "-framework AppKit"
+    )
+
+    set(PLATFORM_COMPILE_OPTIONS
+            -ObjC
+    )
 else()
     # Linux/Unix systémy
     find_package(PkgConfig REQUIRED)

@@ -19,6 +19,7 @@ extern "C" {
 #endif
 
 #define NFD_MAX_STRLEN 256
+#define NFD_MAX_FILTERS 1000
 #define _NFD_UNUSED(x) ((void)x)
 
 #define NFD_UTF8_BOM "\xEF\xBB\xBF"

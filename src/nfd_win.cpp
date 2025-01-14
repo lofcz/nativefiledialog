@@ -21,6 +21,13 @@
 #define UNICODE
 #endif
 
+#if _MSC_VER
+// see
+// https://developercommunity.visualstudio.com/content/problem/185399/error-c2760-in-combaseapih-with-windows-sdk-81-and.html
+struct IUnknown;  // Workaround for "combaseapi.h(229): error C2187: syntax error: 'identifier' was
+// unexpected here" when using /permissive-
+#endif
+
 #include <wchar.h>
 #include <stdio.h>
 #include <assert.h>
@@ -29,6 +36,8 @@
 #include "nfd_common.h"
 
 #include <ShellScalingApi.h>
+
+#include "common.h"
 #pragma comment(lib, "Shcore.lib")
 
 
@@ -40,8 +49,9 @@ HMODULE hUser32 = LoadLibraryW(L"user32.dll"); \
 if (hUser32) \
 { \
 typedef BOOL(WINAPI* SetProcessDpiAwarenessContextPtr)(DPI_AWARENESS_CONTEXT); \
+void* procAddr = (void*)GetProcAddress(hUser32, "SetProcessDpiAwarenessContext"); \
 SetProcessDpiAwarenessContextPtr setProcessDpiAwarenessContext = \
-(SetProcessDpiAwarenessContextPtr)GetProcAddress(hUser32, "SetProcessDpiAwarenessContext"); \
+(SetProcessDpiAwarenessContextPtr)(procAddr); \
 if (setProcessDpiAwarenessContext) \
 { \
 setProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2); \
@@ -49,6 +59,7 @@ setProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2); \
 FreeLibrary(hUser32); \
 } \
 } while(0)
+
 
 
 static BOOL COMIsInitialized(HRESULT coResult)
@@ -152,116 +163,68 @@ static void CopyNFDCharToWChar( const nfdchar_t *inStr, wchar_t **outStr )
 #endif
 }
 
-
-/* ext is in format "jpg", no wildcards or separators */
-static int AppendExtensionToSpecBuf( const char *ext, char *specBuf, size_t specBufLen )
-{
-    const char SEP[] = ";";
-    assert( specBufLen > strlen(ext)+3 );
-
-    if ( strlen(specBuf) > 0 )
-    {
-        strncat( specBuf, SEP, specBufLen - strlen(specBuf) - 1 );
-        specBufLen += strlen(SEP);
-    }
-
-    char extWildcard[NFD_MAX_STRLEN];
-    int bytesWritten = sprintf_s( extWildcard, NFD_MAX_STRLEN, "*.%s", ext );
-    assert( bytesWritten == (int)(strlen(ext)+2) );
-    _NFD_UNUSED(bytesWritten);
-
-    strncat( specBuf, extWildcard, specBufLen - strlen(specBuf) - 1 );
-
-    return NFD_OKAY;
-}
-
-static nfdresult_t AddFiltersToDialog( ::IFileDialog *fileOpenDialog, const char *filterList )
+static nfdresult_t AddFiltersToDialog(::IFileDialog *fileOpenDialog, const char *filterList)
 {
     const wchar_t WILDCARD[] = L"*.*";
+    NFDFilterList filters;
 
-    if ( !filterList || strlen(filterList) == 0 )
+    // Použijeme společnou funkci pro parsování filtrů
+    if (!ParseFilterList(filterList, &filters)) {
+        return NFD_ERROR;
+    }
+
+    // Pokud nejsou žádné filtry, končíme
+    if (filters.count == 0) {
         return NFD_OKAY;
-
-    // Count rows to alloc
-    UINT filterCount = 1; /* guaranteed to have one filter on a correct, non-empty parse */
-    const char *p_filterList;
-    for ( p_filterList = filterList; *p_filterList; ++p_filterList )
-    {
-        if ( *p_filterList == ';' )
-            ++filterCount;
     }
 
-    assert(filterCount);
-    if ( !filterCount )
-    {
-        NFDi_SetError("Error parsing filters.");
+    // Alokujeme pole pro COMDLG_FILTERSPEC (včetně wildcard filtru)
+    COMDLG_FILTERSPEC *specList = (COMDLG_FILTERSPEC*)NFDi_Malloc(
+        sizeof(COMDLG_FILTERSPEC) * (filters.count + 1));
+
+    if (!specList) {
+        NFDi_Free(filters.filters);
+        NFDi_SetError("Memory allocation failed.");
         return NFD_ERROR;
     }
 
-    /* filterCount plus 1 because we hardcode the *.* wildcard after the while loop */
-    COMDLG_FILTERSPEC *specList = (COMDLG_FILTERSPEC*)NFDi_Malloc( sizeof(COMDLG_FILTERSPEC) * ((size_t)filterCount + 1) );
-    if ( !specList )
-    {
-        return NFD_ERROR;
-    }
-    for (UINT i = 0; i < filterCount+1; ++i )
-    {
-        specList[i].pszName = nullptr;
-        specList[i].pszSpec = nullptr;
-    }
+    memset(specList, 0, sizeof(COMDLG_FILTERSPEC) * (filters.count + 1));
 
-    size_t specIdx = 0;
-    p_filterList = filterList;
-    char typebuf[NFD_MAX_STRLEN] = {0};  /* one per comma or semicolon */
-    char *p_typebuf = typebuf;
+    // Převedeme filtry do Windows formátu
+    for (size_t i = 0; i < filters.count; ++i) {
+        CopyNFDCharToWChar(filters.filters[i].name,
+                          (wchar_t**)&specList[i].pszName);
+        CopyNFDCharToWChar(filters.filters[i].pattern,
+                          (wchar_t**)&specList[i].pszSpec);
 
-    char specbuf[NFD_MAX_STRLEN] = {0}; /* one per semicolon */
-
-    while ( 1 )
-    {
-        if ( NFDi_IsFilterSegmentChar(*p_filterList) )
-        {
-            /* append a type to the specbuf (pending filter) */
-            AppendExtensionToSpecBuf( typebuf, specbuf, NFD_MAX_STRLEN );
-
-            p_typebuf = typebuf;
-            memset( typebuf, 0, sizeof(char)*NFD_MAX_STRLEN );
+        // Kontrola, zda se konverze povedla
+        if (!specList[i].pszName || !specList[i].pszSpec) {
+            // Cleanup při chybě
+            for (size_t j = 0; j < i; ++j) {
+                NFDi_Free((void*)specList[j].pszName);
+                NFDi_Free((void*)specList[j].pszSpec);
+            }
+            NFDi_Free(specList);
+            NFDi_Free(filters.filters);
+            NFDi_SetError("Error converting filter to wide string.");
+            return NFD_ERROR;
         }
-
-        if ( *p_filterList == ';' || *p_filterList == '\0' )
-        {
-            /* end of filter -- add it to specList */
-
-            CopyNFDCharToWChar( specbuf, (wchar_t**)&specList[specIdx].pszName );
-            CopyNFDCharToWChar( specbuf, (wchar_t**)&specList[specIdx].pszSpec );
-
-            memset( specbuf, 0, sizeof(char)*NFD_MAX_STRLEN );
-            ++specIdx;
-            if ( specIdx == filterCount )
-                break;
-        }
-
-        if ( !NFDi_IsFilterSegmentChar( *p_filterList ))
-        {
-            *p_typebuf = *p_filterList;
-            ++p_typebuf;
-        }
-
-        ++p_filterList;
     }
 
-    /* Add wildcard */
-    specList[specIdx].pszSpec = WILDCARD;
-    specList[specIdx].pszName = WILDCARD;
+    // Přidáme wildcard filtr
+    specList[filters.count].pszSpec = WILDCARD;
+    specList[filters.count].pszName = WILDCARD;
 
-    fileOpenDialog->SetFileTypes( filterCount+1, specList );
+    // Nastavíme filtry v dialogu
+    fileOpenDialog->SetFileTypes(filters.count + 1, specList);
 
-    /* free speclist */
-    for ( size_t i = 0; i < filterCount; ++i )
-    {
-        NFDi_Free( (void*)specList[i].pszSpec );
+    // Cleanup
+    for (size_t i = 0; i < filters.count; ++i) {
+        NFDi_Free((void*)specList[i].pszName);
+        NFDi_Free((void*)specList[i].pszSpec);
     }
-    NFDi_Free( specList );
+    NFDi_Free(specList);
+    NFDi_Free(filters.filters);
 
     return NFD_OKAY;
 }

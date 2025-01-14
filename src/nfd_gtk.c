@@ -10,6 +10,8 @@
 #include <gtk/gtk.h>
 #include "nfd.h"
 #include "nfd_common.h"
+#include "common.h"
+
 
 
 const char INIT_FAIL_MSG[] = "gtk_init_check failed to initilaize GTK+";
@@ -29,67 +31,52 @@ static void AddTypeToFilterName( const char *typebuf, char *filterName, size_t b
     strncat( filterName, typebuf, bufsize - len - 1 );
 }
 
-static void AddFiltersToDialog( GtkWidget *dialog, const char *filterList )
+static void AddFiltersToDialog(GtkWidget *dialog, const char *filterList)
 {
-    GtkFileFilter *filter;
-    char typebuf[NFD_MAX_STRLEN] = {0};
-    const char *p_filterList = filterList;
-    char *p_typebuf = typebuf;
-    char filterName[NFD_MAX_STRLEN] = {0};
-    
-    if ( !filterList || strlen(filterList) == 0 )
+    NFDFilterList filters;
+
+    // Použijeme společnou funkci pro parsování filtrů
+    if (!ParseFilterList(filterList, &filters)) {
         return;
-
-    filter = gtk_file_filter_new();
-    while ( 1 )
-    {
-        
-        if ( NFDi_IsFilterSegmentChar(*p_filterList) )
-        {
-            char typebufWildcard[NFD_MAX_STRLEN];
-            /* add another type to the filter */
-            assert( strlen(typebuf) > 0 );
-            assert( strlen(typebuf) < NFD_MAX_STRLEN-1 );
-            
-            snprintf( typebufWildcard, NFD_MAX_STRLEN, "*.%s", typebuf );
-            AddTypeToFilterName( typebuf, filterName, NFD_MAX_STRLEN );
-            
-            gtk_file_filter_add_pattern( filter, typebufWildcard );
-            
-            p_typebuf = typebuf;
-            memset( typebuf, 0, sizeof(char) * NFD_MAX_STRLEN );
-        }
-        
-        if ( *p_filterList == ';' || *p_filterList == '\0' )
-        {
-            /* end of filter -- add it to the dialog */
-            
-            gtk_file_filter_set_name( filter, filterName );
-            gtk_file_chooser_add_filter( GTK_FILE_CHOOSER(dialog), filter );
-
-            filterName[0] = '\0';
-
-            if ( *p_filterList == '\0' )
-                break;
-
-            filter = gtk_file_filter_new();            
-        }
-
-        if ( !NFDi_IsFilterSegmentChar( *p_filterList ) )
-        {
-            *p_typebuf = *p_filterList;
-            p_typebuf++;
-        }
-
-        p_filterList++;
     }
-    
-    /* always append a wildcard option to the end*/
 
-    filter = gtk_file_filter_new();
-    gtk_file_filter_set_name( filter, "*.*" );
-    gtk_file_filter_add_pattern( filter, "*" );
-    gtk_file_chooser_add_filter( GTK_FILE_CHOOSER(dialog), filter );
+    // Přidáme každý filtr
+    for (size_t i = 0; i < filters.count; ++i) {
+        GtkFileFilter *filter = gtk_file_filter_new();
+        gtk_file_filter_set_name(filter, filters.filters[i].name);
+
+        // Rozdělíme pattern podle středníků a přidáme každý vzor
+        char* pattern = strdup(filters.filters[i].pattern);
+        if (pattern) {
+            char* saveptr = NULL;
+            char* token = strtok_r(pattern, ";", &saveptr);
+
+            while (token) {
+                // Ořežeme whitespace
+                while (*token == ' ') token++;
+                char* end = token + strlen(token) - 1;
+                while (end > token && *end == ' ') *end-- = '\0';
+
+                if (*token) {
+                    gtk_file_filter_add_pattern(filter, token);
+                }
+                token = strtok_r(NULL, ";", &saveptr);
+            }
+
+            free(pattern);
+        }
+
+        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+    }
+
+    // Přidáme wildcard filtr na konec
+    GtkFileFilter *filter = gtk_file_filter_new();
+    gtk_file_filter_set_name(filter, "*.*");
+    gtk_file_filter_add_pattern(filter, "*");
+    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+
+    // Cleanup
+    NFDi_Free(filters.filters);
 }
 
 static void SetDefaultPath( GtkWidget *dialog, const char *defaultPath )

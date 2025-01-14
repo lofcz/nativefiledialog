@@ -186,3 +186,4 @@ build32
 build64
 cmake-build-debug
 build_linux
+build_macos
